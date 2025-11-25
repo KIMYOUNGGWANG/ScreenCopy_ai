@@ -7,8 +7,8 @@ import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 async function CreditDisplay() {
-    const cookieStore = cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore })
+    const cookieStore = await cookies()
+    const supabase = createServerComponentClient({ cookies: () => cookieStore as any })
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -30,8 +30,8 @@ async function CreditDisplay() {
 }
 
 export default async function DashboardPage() {
-    const cookieStore = cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore })
+    const cookieStore = await cookies()
+    const supabase = createServerComponentClient({ cookies: () => cookieStore as any })
 
     const { data: { session } } = await supabase.auth.getSession()
 

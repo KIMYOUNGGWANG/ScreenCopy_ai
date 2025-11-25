@@ -17,8 +17,8 @@ export async function POST(request: Request) {
             }, { status: 400 })
         }
 
-        const cookieStore = cookies()
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+        const cookieStore = await cookies()
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore as any })
 
         // Check Authentication (no credit deduction for refinement)
         const { data: { session } } = await supabase.auth.getSession()
