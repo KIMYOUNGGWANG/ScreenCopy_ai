@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
-import { Trash2, Star } from 'lucide-react'
+import { Trash2, Star, ArrowLeft, Clock, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import { HistorySkeleton } from '@/components/ui/skeleton'
 import { GeneratedCopy } from '@/components/result-card'
 
@@ -25,9 +26,14 @@ interface Generation {
     is_favorite?: boolean
 }
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ResultCard } from '@/components/result-card'
+import { ContextFormData } from '@/components/context-form'
+
 export default function HistoryPage() {
     const [generations, setGenerations] = useState<Generation[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null)
     const supabase = createClientComponentClient()
 
     useEffect(() => {
@@ -54,7 +60,10 @@ export default function HistoryPage() {
         loadGenerations()
     }, [supabase])
 
-    async function handleDelete(id: string) {
+    async function handleDelete(id: string, e: React.MouseEvent) {
+        e.stopPropagation() // Prevent card click
+        if (!confirm('Are you sure you want to delete this?')) return
+
         try {
             const { error } = await supabase
                 .from('generations')
@@ -65,13 +74,15 @@ export default function HistoryPage() {
 
             setGenerations(prev => prev.filter(g => g.id !== id))
             toast.success('Generation deleted')
+            if (selectedGeneration?.id === id) setSelectedGeneration(null)
         } catch (error) {
             console.error('Delete error:', error)
             toast.error('Failed to delete')
         }
     }
 
-    async function handleToggleFavorite(id: string, currentStatus: boolean) {
+    async function handleToggleFavorite(id: string, currentStatus: boolean, e: React.MouseEvent) {
+        e.stopPropagation() // Prevent card click
         try {
             const { error } = await supabase
                 .from('generations')
@@ -103,11 +114,24 @@ export default function HistoryPage() {
 
     return (
         <div className="container mx-auto py-8 px-4 max-w-6xl">
+            <div className="mb-6">
+                <Button asChild variant="ghost" className="gap-2">
+                    <Link href="/dashboard">
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Dashboard
+                    </Link>
+                </Button>
+            </div>
+
             <h1 className="text-3xl font-bold mb-8">Generation History</h1>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {generations?.map((gen) => (
-                    <Card key={gen.id} className="overflow-hidden flex flex-col group">
+                    <Card
+                        key={gen.id}
+                        className="overflow-hidden flex flex-col group cursor-pointer hover:border-primary transition-all hover:shadow-md"
+                        onClick={() => setSelectedGeneration(gen)}
+                    >
                         <div className="aspect-video relative bg-gray-100">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -116,7 +140,8 @@ export default function HistoryPage() {
                                 className="object-cover w-full h-full"
                             />
                             <div className="absolute top-2 right-2">
-                                <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm">
+                                <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-md border-none gap-1.5 hover:bg-black/70">
+                                    <Clock className="w-3 h-3" />
                                     {formatDistanceToNow(new Date(gen.created_at), { addSuffix: true })}
                                 </Badge>
                             </div>
@@ -126,7 +151,7 @@ export default function HistoryPage() {
                                     size="icon"
                                     variant="secondary"
                                     className="h-8 w-8 bg-white/90 backdrop-blur-sm"
-                                    onClick={() => handleToggleFavorite(gen.id, gen.is_favorite || false)}
+                                    onClick={(e) => handleToggleFavorite(gen.id, gen.is_favorite || false, e)}
                                 >
                                     <Star
                                         className={`h-4 w-4 ${gen.is_favorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
@@ -136,7 +161,7 @@ export default function HistoryPage() {
                                     size="icon"
                                     variant="destructive"
                                     className="h-8 w-8"
-                                    onClick={() => handleDelete(gen.id)}
+                                    onClick={(e) => handleDelete(gen.id, e)}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -175,6 +200,31 @@ export default function HistoryPage() {
                     </div>
                 )}
             </div>
+
+            {/* Detail Modal */}
+            <Dialog open={!!selectedGeneration} onOpenChange={(open) => !open && setSelectedGeneration(null)}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Generation Details</DialogTitle>
+                    </DialogHeader>
+
+                    {selectedGeneration && (
+                        <div className="grid md:grid-cols-2 gap-6 mt-4">
+                            {selectedGeneration.output_copy.map((copy, index) => (
+                                <div key={index} className="w-full">
+                                    <ResultCard
+                                        copy={copy}
+                                        index={index}
+                                        imageUrl={selectedGeneration.image_url}
+                                        isExpanded={true}
+                                        context={selectedGeneration.input_context as unknown as ContextFormData}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

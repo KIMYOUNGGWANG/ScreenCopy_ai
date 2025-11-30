@@ -1,7 +1,14 @@
 'use client'
 
-import { Copy, Check, Wand2 } from 'lucide-react'
-import { useState } from 'react'
+import { Copy, Check, Wand2, GripHorizontal } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,25 +23,50 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { RefinementDialog } from './refinement-dialog'
+import { ContextFormData } from './context-form'
 
 export interface GeneratedCopy {
     headline: string
     subtext: string
     style: string
+    layout: 'top' | 'bottom' | 'center' | 'split'
+    color_hex: string
+    aso_score: number
+    benchmark_ref: string
     reasoning: string
 }
 
 interface ResultCardProps {
     copy: GeneratedCopy
     index: number
+    imageUrl?: string | null
     onRefine?: (refinedCopy: GeneratedCopy) => void
+    isExpanded?: boolean
+    context: ContextFormData
 }
 
-export function ResultCard({ copy, index, onRefine }: ResultCardProps) {
+const FONT_STYLES = [
+    { name: 'Modern', class: 'font-sans' },
+    { name: 'Impact', class: 'font-extrabold tracking-tight' },
+    { name: 'Elegant', class: 'font-serif' },
+    { name: 'Playful', class: 'font-mono' },
+]
+
+export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false, context }: ResultCardProps) {
     const [copied, setCopied] = useState(false)
-    const [refineOpen, setRefineOpen] = useState(false)
-    const [refineInstruction, setRefineInstruction] = useState('')
-    const [refining, setRefining] = useState(false)
+    const [viewMode, setViewMode] = useState<'preview' | 'text'>('preview')
+    const [currentFontIndex, setCurrentFontIndex] = useState(0)
+
+    // Local state for editable text
+    const [headline, setHeadline] = useState(copy.headline)
+    const [subtext, setSubtext] = useState(copy.subtext)
+
+    // Update local state when prop changes
+    useEffect(() => {
+        setHeadline(copy.headline)
+        setSubtext(copy.subtext)
+    }, [copy.headline, copy.subtext])
 
     const handleCopy = async () => {
         try {
@@ -47,71 +79,146 @@ export function ResultCard({ copy, index, onRefine }: ResultCardProps) {
         }
     }
 
-    const handleRefine = async () => {
-        if (!refineInstruction.trim()) {
-            toast.error('Please enter a refinement instruction')
-            return
-        }
+    const toggleStyle = () => {
+        setCurrentFontIndex((prev) => (prev + 1) % FONT_STYLES.length)
+    }
 
-        try {
-            setRefining(true)
-            const response = await fetch('/api/refine', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    originalCopy: copy,
-                    instruction: refineInstruction
-                })
-            })
-
-            const result = await response.json()
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Refinement failed')
-            }
-
-            toast.success('Copy refined successfully!')
-            if (onRefine) {
-                onRefine({ ...result.data, style: copy.style })
-            }
-            setRefineOpen(false)
-            setRefineInstruction('')
-        } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to refine copy'
-            toast.error(errorMessage)
-        } finally {
-            setRefining(false)
+    const getLayoutClasses = (layout: string) => {
+        switch (layout) {
+            case 'top': return 'justify-start pt-12'
+            case 'bottom': return 'justify-end pb-12'
+            case 'center': return 'justify-center'
+            case 'split': return 'justify-between py-12'
+            default: return 'justify-center'
         }
     }
 
-    const quickRefinements = [
-        "Make it shorter (5-6 words)",
-        "Make it more casual and friendly",
-        "Add urgency and FOMO",
-        "Focus on the main benefit",
-        "Make it more professional"
-    ]
-
     return (
-        <Card className="h-full flex flex-col hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-start gap-2">
+        <Card className="h-full flex flex-col hover:border-primary/50 transition-colors overflow-hidden">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0 flex-wrap gap-y-2">
+                <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="uppercase text-xs">
                         {copy.style}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">Option {index + 1}</span>
+                    <Badge variant={copy.aso_score >= 80 ? "default" : "outline"} className="text-xs bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">
+                        ASO {copy.aso_score}
+                    </Badge>
+                </div>
+                <div className="flex bg-muted rounded-md p-0.5">
+                    <button
+                        onClick={() => setViewMode('preview')}
+                        className={`px-2 py-0.5 text-xs rounded-sm transition-colors ${viewMode === 'preview' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        Preview
+                    </button>
+                    <button
+                        onClick={() => setViewMode('text')}
+                        className={`px-2 py-0.5 text-xs rounded-sm transition-colors ${viewMode === 'text' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        Text
+                    </button>
                 </div>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col gap-4">
-                <div>
-                    <h3 className="text-xl font-bold leading-tight mb-2">{copy.headline}</h3>
-                    <p className="text-sm text-muted-foreground">{copy.subtext}</p>
-                </div>
+            <CardContent className="flex-1 flex flex-col gap-4 p-0">
+                {viewMode === 'preview' && imageUrl ? (
+                    <div className="relative aspect-[9/16] w-full bg-black overflow-hidden group">
+                        {/* Image Layer (Blurred Background for Fill) */}
+                        <div className="absolute inset-0 opacity-50">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={imageUrl}
+                                alt="Background"
+                                className="w-full h-full object-cover blur-xl scale-110"
+                            />
+                        </div>
 
-                <div className="mt-auto pt-4 border-t">
-                    <p className="text-xs text-muted-foreground mb-3 italic">
-                        &quot;{copy.reasoning}&quot;
-                    </p>
+                        {/* Image Layer (Main Image - Contain) */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={imageUrl}
+                                alt="App Screenshot"
+                                className="w-full h-full object-contain z-10"
+                            />
+                            {/* Overlay Gradient on top of image */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 z-20" />
+                        </div>
+
+                        {/* Text Layer (Draggable Area) */}
+                        <div className="absolute inset-0 overflow-hidden z-30 pointer-events-none">
+                            <motion.div
+                                drag
+                                dragMomentum={false}
+                                dragConstraints={{ left: -100, right: 100, top: -200, bottom: 200 }}
+                                className={`absolute inset-x-0 p-4 md:p-6 flex flex-col items-center ${getLayoutClasses(copy.layout)} cursor-grab active:cursor-grabbing pointer-events-auto group/drag`}
+                            >
+                                <TooltipProvider>
+                                    <Tooltip delayDuration={0}>
+                                        <TooltipTrigger asChild>
+                                            <div
+                                                className={`relative text-center transition-all duration-300 ${FONT_STYLES[currentFontIndex].class} bg-black/40 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/10 w-[95%] mx-auto hyphens-none group-hover/drag:border-white/30`}
+                                                style={{ color: copy.color_hex || '#ffffff' }}
+                                            >
+                                                {/* Drag Handle */}
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-md rounded-full p-1 opacity-50 group-hover/drag:opacity-100 transition-opacity">
+                                                    <GripHorizontal className="w-4 h-4 text-white" />
+                                                </div>
+
+                                                <h3
+                                                    contentEditable
+                                                    suppressContentEditableWarning
+                                                    onBlur={(e) => setHeadline(e.currentTarget.textContent || '')}
+                                                    className={`text-lg md:text-2xl font-bold leading-tight mb-2 drop-shadow-lg outline-none focus:bg-white/10 rounded px-1 ${isExpanded ? '' : 'line-clamp-4'}`}
+                                                >
+                                                    {headline}
+                                                </h3>
+                                                <p
+                                                    contentEditable
+                                                    suppressContentEditableWarning
+                                                    onBlur={(e) => setSubtext(e.currentTarget.textContent || '')}
+                                                    className={`text-xs md:text-sm font-medium drop-shadow-md opacity-90 outline-none focus:bg-white/10 rounded px-1 ${isExpanded ? '' : 'line-clamp-3'}`}
+                                                >
+                                                    {subtext}
+                                                </p>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="bg-black/80 text-white border-none text-xs">
+                                            <p>Drag to position • Click to edit</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </motion.div>
+                        </div>
+
+                        {/* Style Shuffle Button */}
+                        <button
+                            onClick={toggleStyle}
+                            className="absolute bottom-2 right-2 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-20"
+                            title="Shuffle Font Style"
+                        >
+                            <Wand2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="p-6 flex flex-col gap-4">
+                        <div>
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-xl font-bold leading-tight">{headline}</h3>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{subtext}</p>
+                        </div>
+
+                        <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 pl-2">
+                            <p className="italic">&quot;{copy.reasoning}&quot;</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="font-semibold text-neon-cyan">Benchmark:</span>
+                                <span>{copy.benchmark_ref}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-auto p-4 pt-0">
                     <div className="flex gap-2">
                         <Button
                             variant={copied ? "default" : "outline"}
@@ -123,57 +230,11 @@ export function ResultCard({ copy, index, onRefine }: ResultCardProps) {
                             {copied ? 'Copied' : 'Copy'}
                         </Button>
 
-                        <Dialog open={refineOpen} onOpenChange={setRefineOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <Wand2 className="w-4 h-4" />
-                                    Refine
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Refine This Copy</DialogTitle>
-                                    <DialogDescription>
-                                        Tell the AI how you&apos;d like to improve this headline.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 pt-4">
-                                    <div>
-                                        <Label htmlFor="instruction">Your instruction</Label>
-                                        <Input
-                                            id="instruction"
-                                            placeholder="e.g., Make it shorter and more impactful"
-                                            value={refineInstruction}
-                                            onChange={(e) => setRefineInstruction(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleRefine()}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label className="text-xs text-muted-foreground">Quick suggestions:</Label>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            {quickRefinements.map((suggestion, i) => (
-                                                <Button
-                                                    key={i}
-                                                    variant="secondary"
-                                                    size="sm"
-                                                    className="text-xs"
-                                                    onClick={() => setRefineInstruction(suggestion)}
-                                                >
-                                                    {suggestion}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <Button
-                                        onClick={handleRefine}
-                                        disabled={refining}
-                                        className="w-full"
-                                    >
-                                        {refining ? 'Refining...' : 'Generate Refined Version'}
-                                    </Button>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
+                        <RefinementDialog
+                            copy={copy}
+                            onRefine={(refined) => onRefine && onRefine(refined)}
+                            context={context}
+                        />
                     </div>
                 </div>
             </CardContent>

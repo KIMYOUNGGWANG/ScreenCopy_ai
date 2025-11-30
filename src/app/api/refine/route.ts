@@ -9,7 +9,7 @@ const anthropic = new Anthropic({
 
 export async function POST(request: Request) {
     try {
-        const { originalCopy, instruction } = await request.json()
+        const { originalCopy, instruction, context } = await request.json()
 
         if (!originalCopy || !instruction) {
             return NextResponse.json({
@@ -28,30 +28,54 @@ export async function POST(request: Request) {
             }, { status: 401 })
         }
 
+        const appName = context?.appName || 'App'
+        const category = context?.category || 'General'
+        const targetAudience = context?.targetAudience || 'General Users'
+        const brandTone = context?.tone || 'Professional'
+
         // Call Claude to refine the copy
         const prompt = `
-You are an expert App Store copywriter. Your task is to refine the following marketing headline based on the user's instruction.
+You are an expert Mobile App Copywriter (iOS & Android) specialized in ASO (App Store Optimization).
+Your task is to refine the marketing headline based on the user's instruction, while ensuring it fits the app's brand and visual constraints.
 
-ORIGINAL HEADLINE:
-"${originalCopy.headline}"
+---
+APP CONTEXT (Do not ignore):
+- App Name: ${appName}
+- Category: ${category}
+- Target Audience: ${targetAudience}
+- Tone of Voice: ${brandTone}
 
-ORIGINAL SUBTEXT:
-"${originalCopy.subtext || ''}"
+CURRENT STATE:
+- Headline: "${originalCopy.headline}"
+- Subtext: "${originalCopy.subtext || ''}"
+- Current Layout: ${originalCopy.layout}
+- Current Color: ${originalCopy.color_hex}
 
 USER INSTRUCTION:
 ${instruction}
 
+---
 TASK:
-Create a refined version of the headline that follows the user's instruction while maintaining marketing effectiveness.
+Refine the copy to strictly follow the User Instruction.
+If the instruction is vague (e.g., "Make it better"), optimize for higher Click-Through Rate (CTR) based on the "App Context".
+
+GUIDELINES:
+1. Length: Keep headlines under 6 words for readability on small screens.
+2. ASO: Prioritize clarity and benefit over cleverness unless instructed otherwise.
+3. Visuals: Only suggest a layout/color change if the text change drastically requires it; otherwise, maintain the current style to ensure contrast safety.
 
 OUTPUT FORMAT (JSON):
 {
-  "headline": "...",
-  "subtext": "...",
-  "reasoning": "Explain what changes you made and why"
+  "headline": "Refined headline text",
+  "subtext": "Refined subtext",
+  "layout": "top|bottom|center|split (Return '${originalCopy.layout}' unless change is critical)",
+  "color_hex": "Hex Code (Return '${originalCopy.color_hex}' unless user specifically asked for color change)",
+  "aso_score": 0-100 (Score based on: Brevity, Keyword relevance, Emotional hook),
+  "benchmark_ref": "Modeled after successful apps in ${category} category",
+  "reasoning": "Explain exactly how the new copy meets the user's instruction AND the app's context."
 }
 
-Return ONLY the JSON object. No other text.
+Return ONLY the JSON object. No other text, no markdown fencing.
 `
 
         const message = await anthropic.messages.create({

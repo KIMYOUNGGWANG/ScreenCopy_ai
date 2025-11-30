@@ -30,6 +30,9 @@ export async function POST(request: Request) {
         const tone = formData.get('tone') as string
         const description = formData.get('description') as string
 
+        const keywords = formData.get('keywords') as string
+        const language = formData.get('language') as string
+
         if (!file) {
             return NextResponse.json({
                 error: 'No image provided. Please upload a screenshot to continue.'
@@ -98,31 +101,146 @@ export async function POST(request: Request) {
         const imageBase64 = Buffer.from(imageBuffer).toString('base64')
         const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp"
 
-        // 5. Call Anthropic Claude 4.5 Sonnet with Retry Logic
-        const prompt = `
-You are an expert App Store marketer. Analyze this screenshot and create 5 compelling marketing headlines.
+        const platform = formData.get('platform') as string || 'app_store'
 
+        // 5. Call Anthropic Claude 4.5 Sonnet with Retry Logic
+        const getSystemPrompt = () => {
+            const commonContext = `
 CONTEXT:
 - App Name: ${appName}
 - Category: ${category}
 - Target Audience: ${targetAudience}
 - Tone: ${tone}
 - App Description: ${description}
+- Keywords: ${keywords || 'None'}
+- Language: ${language || 'English'}
+`
+
+            /* v2 Feature: SocialSnap (Disabled for v1 Launch)
+            if (platform === 'twitter') {
+                return `
+You are a Viral Social Media Manager specializing in Twitter/X growth.
+Analyze the screenshot and write a high-engagement Twitter Thread (5 tweets).
+Style: #BuildInPublic, humble but excited, professional yet personal.
+
+${commonContext}
 
 TASK:
-Create 5 marketing headlines (6-10 words each) optimized for App Store conversion.
+Write a 5-tweet thread.
+Tweet 1: The Hook (Problem statement)
+Tweet 2: The Old Way (Pain point)
+Tweet 3: The Solution (Reference the screenshot)
+Tweet 4: The Benefit (Result)
+Tweet 5: CTA (Link placeholder)
 
-OUTPUT FORMAT (JSON):
+OUTPUT FORMAT (JSON ARRAY):
 [
   {
-    "headline": "...",
-    "subtext": "...",
+    "headline": "Tweet 1 (Hook)",
+    "subtext": "Tweet 2 (Pain)",
+    "style": "thread",
+    "layout": "split",
+    "color_hex": "#1DA1F2",
+    "aso_score": 90,
+    "benchmark_ref": "Twitter Thread Style",
+    "reasoning": "Tweet 3: [Solution Content] | Tweet 4: [Benefit Content] | Tweet 5: [CTA]" 
+  }
+]
+(Note: Pack the full thread content into the fields creatively. Headline=T1, Subtext=T2, Reasoning=T3-T5 for now, or we adapt the UI later. Let's stick to the schema: Headline=Hook, Subtext=Main Value Prop, Reasoning=Full Thread Content)
+`
+            } else if (platform === 'linkedin') {
+                return `
+You are a LinkedIn Top Voice and Thought Leader.
+Analyze the screenshot and write a professional, insight-driven LinkedIn post.
+Style: Storytelling, "Broetry" (spaced out lines), professional insights.
+
+${commonContext}
+
+TASK:
+Write a LinkedIn post structure:
+1. Attention Grabbing Header
+2. The "Aha" Moment (Problem/Solution)
+3. Key Takeaways (Bulleted list)
+4. Call to Discussion
+
+OUTPUT FORMAT (JSON ARRAY):
+[
+  {
+    "headline": "Attention Grabbing Header",
+    "subtext": "The core insight or 'Aha' moment",
+    "style": "professional",
+    "layout": "center",
+    "color_hex": "#0A66C2",
+    "aso_score": 85,
+    "benchmark_ref": "LinkedIn Viral Post",
+    "reasoning": "Full post body content goes here..."
+  }
+]
+`
+            } else if (platform === 'instagram') {
+                return `
+You are an Instagram Growth Expert.
+Analyze the screenshot and write a captivating caption.
+Style: Visual, Emotional, Emoji-rich.
+
+${commonContext}
+
+TASK:
+Write an Instagram caption:
+1. Hook (First line visible)
+2. Value/Story
+3. Engagement Question
+4. Hashtags (30 optimized tags)
+
+OUTPUT FORMAT (JSON ARRAY):
+[
+  {
+    "headline": "Visual Hook (Short & Punchy)",
+    "subtext": "The main caption body with emojis",
+    "style": "emotional",
+    "layout": "bottom",
+    "color_hex": "#E1306C",
+    "aso_score": 88,
+    "benchmark_ref": "Instagram Influencer Style",
+    "reasoning": "Hashtags: #..."
+  }
+]
+`
+            } else {
+            */
+            // Default: App Store
+            return `
+You are an expert Mobile App Growth Expert specializing in App Store & Google Play optimization. Perform a multi-agent analysis on this screenshot to create high-converting marketing copy.
+
+AGENTS:
+1. VISION AGENT: Analyze the screenshot's composition. Identify the best "safe zone" for text (top, bottom, center, or split) where it won't cover important UI elements. Extract the dominant color and suggest a contrasting text color.
+2. STRATEGY AGENT: Based on the Category (${category}), select a benchmark app style (e.g., Tinder for Dating, Calm for Health, Duolingo for Education) and adopt its tone.
+3. ASO AGENT: Analyze the provided keywords (${keywords || 'None'}) and generate copy that naturally integrates them. Score the result (0-100) based on keyword usage and conversion potential.
+
+${commonContext}
+
+TASK:
+Create 5 distinct marketing variations.
+
+OUTPUT FORMAT (JSON ARRAY):
+[
+  {
+    "headline": "Main headline (6-10 words)",
+    "subtext": "Supporting subtitle (10-15 words)",
     "style": "bold|subtle|feature|benefit|emotional",
-    "reasoning": "..."
+    "layout": "top|bottom|center|split",
+    "color_hex": "#FFFFFF (suggested text color)",
+    "aso_score": 85 (0-100),
+    "benchmark_ref": "Modeled after [App Name]",
+    "reasoning": "Why this works..."
   }
 ]
 Return ONLY the JSON array. No other text.
 `
+            // }
+        }
+
+        const prompt = getSystemPrompt()
 
         let generatedCopy = null
         let lastError = null
@@ -186,12 +304,13 @@ Return ONLY the JSON array. No other text.
             .insert({
                 user_id: userId,
                 image_url: publicUrl,
-                input_context: { appName, category, targetAudience, tone, description },
+                input_context: { appName, category, targetAudience, tone, description, keywords, language, platform },
                 output_copy: generatedCopy,
             })
 
         if (dbError) {
             console.error('DB Error:', dbError)
+            throw new Error(`Failed to save history: ${dbError.message}`)
         }
 
         // 7. Log Transaction

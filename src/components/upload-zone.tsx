@@ -76,13 +76,19 @@ export function UploadZone({ onImageSelect, selectedImage, onClear }: UploadZone
                         alt="Preview"
                         className="w-full h-64 object-contain bg-gray-100"
                     />
+
+                    {/* Scanning Animation */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        <div className="w-full h-[2px] bg-neon-cyan shadow-[0_0_15px_rgba(0,243,255,0.8)] animate-[scan_2s_linear_infinite]" />
+                    </div>
+
                     <button
                         onClick={handleClear}
-                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
                     >
                         <X className="w-4 h-4" />
                     </button>
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-xs truncate">
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-xs truncate z-10">
                         {selectedImage.name}
                     </div>
                 </div>
