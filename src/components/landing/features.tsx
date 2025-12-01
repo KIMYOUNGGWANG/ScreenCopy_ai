@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Eye, Smartphone, Palette, BookOpen } from 'lucide-react';
+import { Eye, Smartphone, Palette, FileJson } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,9 +27,9 @@ const features = [
         color: 'text-pink-500',
     },
     {
-        icon: BookOpen,
-        title: 'Learn Marketing',
-        description: 'We don\'t just give you copy; we explain WHY it works, helping you become a better marketer.',
+        icon: FileJson,
+        title: 'Designer-ready Export',
+        description: 'One-click CSV/JSON export. Hand off perfectly formatted copy to your design team instantly.',
         color: 'text-yellow-400',
     },
 ];

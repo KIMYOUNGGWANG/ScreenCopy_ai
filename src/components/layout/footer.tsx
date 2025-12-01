@@ -8,7 +8,7 @@ export function Footer() {
                             Screen<span className="text-neon-cyan">Copy</span>.ai
                         </span>
                         <p className="text-sm">
-                            AI-powered App Store screenshot copywriting.
+                            AI-powered ASO tool for developers.
                         </p>
                     </div>
 

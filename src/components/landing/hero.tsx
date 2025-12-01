@@ -86,7 +86,7 @@ export function Hero() {
             <div className="z-10 px-4 max-w-5xl">
                 <div className="inline-flex items-center rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1 text-sm font-medium text-neon-cyan mb-6 backdrop-blur-sm">
                     <span className="flex h-2 w-2 rounded-full bg-neon-cyan mr-2 animate-pulse"></span>
-                    v1.0 Launch Special
+                    Beta Launch
                 </div>
                 <h1
                     ref={titleRef}
@@ -99,7 +99,8 @@ export function Hero() {
                     ref={subtitleRef}
                     className="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-400 md:text-2xl mb-10 leading-relaxed"
                 >
-                    Stop staring at a blank screen. Upload your app screenshot and let AI generate high-converting text for App Store, Twitter, and LinkedIn in seconds.
+                    Stop staring at a blank screen. Upload your app screenshot and let AI generate high-converting text for App Store, Twitter, and LinkedIn in seconds. <br className="hidden md:block" />
+                    <span className="text-neon-cyan font-medium">Perfect for Indie Devs & Solopreneurs.</span>
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">

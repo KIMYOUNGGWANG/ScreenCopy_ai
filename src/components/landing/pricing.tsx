@@ -10,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const plans = [
     {
-        name: 'Starter',
+        name: 'Starter Pack',
         credits: 10,
         price: '$5',
         perCredit: '$0.50/credit',
@@ -18,7 +18,7 @@ const plans = [
         popular: false,
     },
     {
-        name: 'Pro',
+        name: 'Pro Plan',
         credits: 50,
         price: '$19',
         perCredit: '$0.38/credit',
@@ -26,7 +26,7 @@ const plans = [
         popular: true,
     },
     {
-        name: 'Agency',
+        name: 'Growth Plan',
         credits: 150,
         price: '$49',
         perCredit: '$0.33/credit',
