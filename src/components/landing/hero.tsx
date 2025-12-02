@@ -99,7 +99,7 @@ export function Hero() {
                     ref={subtitleRef}
                     className="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-400 md:text-2xl mb-10 leading-relaxed"
                 >
-                    Stop staring at a blank screen. Upload your app screenshot and let AI generate high-converting text for App Store, Twitter, and LinkedIn in seconds. <br className="hidden md:block" />
+                    Stop staring at a blank screen. Upload your app screenshot and let AI generate high-converting text for App Store, Google Play, Twitter, and LinkedIn in seconds. <br className="hidden md:block" />
                     <span className="text-neon-cyan font-medium">Perfect for Indie Devs & Solopreneurs.</span>
                 </p>
 
