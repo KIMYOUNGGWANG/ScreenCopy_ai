@@ -65,6 +65,7 @@ export function Pricing() {
 
     return (
         <section
+            id="pricing"
             ref={containerRef}
             className="relative w-full bg-background py-24 text-foreground"
         >

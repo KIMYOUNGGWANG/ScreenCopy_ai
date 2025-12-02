@@ -64,6 +64,7 @@ export function Features() {
 
     return (
         <section
+            id="features"
             ref={containerRef}
             className="relative w-full bg-background py-24 text-foreground"
         >
