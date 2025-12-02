@@ -15,6 +15,7 @@ import { GenerationLoading } from '@/components/generation-loading'
 export default function GeneratePage() {
     const [file, setFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+    const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [isGenerating, setIsGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [results, setResults] = useState<GeneratedCopy[] | null>(null)
@@ -94,9 +95,40 @@ export default function GeneratePage() {
         }
     }
 
-    const handleImageSelect = (selectedFile: File) => {
+    const handleImageSelect = async (selectedFile: File) => {
         setFile(selectedFile)
         setPreviewUrl(URL.createObjectURL(selectedFile))
+
+        // Start Auto-fill Analysis
+        setIsAnalyzing(true)
+        const toastId = toast.loading('Analyzing screenshot context...')
+
+        try {
+            const formData = new FormData()
+            formData.append('file', selectedFile)
+
+            const response = await fetch('/api/analyze-image', {
+                method: 'POST',
+                body: formData,
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Analysis failed')
+            }
+
+            if (result.success && result.data) {
+                setInitialValues(result.data)
+                toast.success('Context auto-filled!', { id: toastId })
+            }
+        } catch (error) {
+            console.error('Analysis error:', error)
+            toast.dismiss(toastId)
+            // Silent fail or small notification
+        } finally {
+            setIsAnalyzing(false)
+        }
     }
 
     const resetGeneration = () => {
@@ -185,6 +217,7 @@ export default function GeneratePage() {
                                 onSubmit={handleGenerate}
                                 isLoading={isGenerating}
                                 initialValues={initialValues}
+                                isAnalyzing={isAnalyzing}
                             />
                         </CardContent>
                     </Card>

@@ -144,6 +144,18 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
                             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60 z-20" />
                         </div>
 
+                        {/* iOS Status Bar Simulation */}
+                        <div className="absolute top-0 inset-x-0 h-8 z-40 flex items-center justify-between px-6 text-white text-[10px] font-medium opacity-90">
+                            <span>9:41</span>
+                            <div className="flex items-center gap-1.5">
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3"><path d="M1.41 9.32c.39-.39 1.02-.39 1.41 0l1.26 1.26c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L2.83 6.5c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.26 1.26c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0zm21.18 0c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.26-1.26c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.26 1.26c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0zM12 1C5.93 1 1 5.93 1 12s4.93 11 11 11 11-4.93 11-11S18.07 1 12 1zm0 20c-4.97 0-9-4.03-9-9s4.03-9 9-9 9 4.03 9 9-4.03 9-9 9z" /></svg>
+                                <div className="w-4 h-2.5 border border-white rounded-[2px] relative">
+                                    <div className="absolute inset-0.5 bg-white rounded-[1px]" />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Text Layer (Draggable Area) */}
                         <div className="absolute inset-0 overflow-hidden z-30 pointer-events-none">
                             <motion.div
@@ -204,8 +216,32 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
                         <div>
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="text-xl font-bold leading-tight">{headline}</h3>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(headline)
+                                        toast.success('Headline copied!')
+                                    }}
+                                >
+                                    <Copy className="h-3 w-3" />
+                                </Button>
                             </div>
-                            <p className="text-sm text-muted-foreground">{subtext}</p>
+                            <div className="flex justify-between items-start">
+                                <p className="text-sm text-muted-foreground">{subtext}</p>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(subtext)
+                                        toast.success('Subtext copied!')
+                                    }}
+                                >
+                                    <Copy className="h-3 w-3" />
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 pl-2">

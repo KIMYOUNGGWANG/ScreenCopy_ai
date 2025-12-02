@@ -36,9 +36,10 @@ interface ContextFormProps {
     onSubmit: (data: ContextFormData) => void
     isLoading?: boolean
     initialValues?: Partial<ContextFormData>
+    isAnalyzing?: boolean
 }
 
-export function ContextForm({ onSubmit, isLoading, initialValues }: ContextFormProps) {
+export function ContextForm({ onSubmit, isLoading, initialValues, isAnalyzing }: ContextFormProps) {
     const defaultValues = {
         platform: "app_store" as const,
         appName: "",
@@ -69,7 +70,15 @@ export function ContextForm({ onSubmit, isLoading, initialValues }: ContextFormP
     return (
         <Card>
             <CardContent className="pt-6">
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 relative">
+                    {isAnalyzing && (
+                        <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-[1px] flex items-center justify-center rounded-lg">
+                            <div className="flex items-center gap-2 bg-background/80 px-4 py-2 rounded-full shadow-sm border animate-pulse">
+                                <span className="h-2 w-2 bg-neon-cyan rounded-full animate-bounce"></span>
+                                <span className="text-sm font-medium text-muted-foreground">AI is reading your screenshot...</span>
+                            </div>
+                        </div>
+                    )}
                     {/* v2 Feature: Platform Selector (Disabled for v1 Launch) */}
                     {/* <div className="space-y-2">
                         <Label htmlFor="platform">Platform</Label>
