@@ -41,4 +41,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+v2_final.md
 v2.md

@@ -1,6 +1,6 @@
 'use client'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,8 @@ import Link from 'next/link'
 import { HistorySkeleton } from '@/components/ui/skeleton'
 import { GeneratedCopy } from '@/components/result-card'
 
+import { GhostwriterOutput } from '@/types/generation'
+
 interface Generation {
     id: string
     created_at: string
@@ -20,9 +22,10 @@ interface Generation {
         appName: string
         category: string
         tone: string
+        platform?: string
         [key: string]: unknown
     }
-    output_copy: GeneratedCopy[]
+    output_copy: GeneratedCopy[] | GhostwriterOutput
     is_favorite?: boolean
 }
 
@@ -34,7 +37,7 @@ export default function HistoryPage() {
     const [generations, setGenerations] = useState<Generation[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedGeneration, setSelectedGeneration] = useState<Generation | null>(null)
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
 
     useEffect(() => {
         async function loadGenerations() {
@@ -179,15 +182,31 @@ export default function HistoryPage() {
                         </CardHeader>
                         <CardContent className="flex-1">
                             <div className="space-y-2">
-                                {gen.output_copy.slice(0, 2).map((copy: GeneratedCopy, i: number) => (
-                                    <div key={i} className="p-2 bg-muted/50 rounded text-sm">
-                                        <p className="font-medium line-clamp-2">{copy.headline}</p>
+                                {Array.isArray(gen.output_copy) ? (
+                                    // v1: List of headlines
+                                    <>
+                                        {gen.output_copy.slice(0, 2).map((copy: GeneratedCopy, i: number) => (
+                                            <div key={i} className="p-2 bg-muted/50 rounded text-sm">
+                                                <p className="font-medium line-clamp-2">{copy.headline}</p>
+                                            </div>
+                                        ))}
+                                        {gen.output_copy.length > 2 && (
+                                            <p className="text-xs text-center text-muted-foreground pt-2">
+                                                + {gen.output_copy.length - 2} more options
+                                            </p>
+                                        )}
+                                    </>
+                                ) : (
+                                    // v2: Ghostwriter Summary
+                                    <div className="p-3 bg-slate-950 rounded text-sm border border-slate-800">
+                                        <div className="flex items-center gap-2 mb-2 text-green-400">
+                                            <Sparkles className="w-3 h-3" />
+                                            <span className="font-mono text-xs">Ghostwriter Schedule</span>
+                                        </div>
+                                        <p className="text-muted-foreground text-xs line-clamp-3">
+                                            3-Day Content Schedule generated for {gen.input_context.platform || 'Twitter'}.
+                                        </p>
                                     </div>
-                                ))}
-                                {gen.output_copy.length > 2 && (
-                                    <p className="text-xs text-center text-muted-foreground pt-2">
-                                        + {gen.output_copy.length - 2} more options
-                                    </p>
                                 )}
                             </div>
                         </CardContent>
@@ -209,18 +228,28 @@ export default function HistoryPage() {
                     </DialogHeader>
 
                     {selectedGeneration && (
-                        <div className="grid md:grid-cols-2 gap-6 mt-4">
-                            {selectedGeneration.output_copy.map((copy, index) => (
-                                <div key={index} className="w-full">
-                                    <ResultCard
-                                        copy={copy}
-                                        index={index}
-                                        imageUrl={selectedGeneration.image_url}
-                                        isExpanded={true}
-                                        context={selectedGeneration.input_context as unknown as ContextFormData}
-                                    />
+                        <div className="mt-4">
+                            {Array.isArray(selectedGeneration.output_copy) ? (
+                                // v1 View
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {selectedGeneration.output_copy.map((copy, index) => (
+                                        <div key={index} className="w-full">
+                                            <ResultCard
+                                                copy={copy}
+                                                index={index}
+                                                imageUrl={selectedGeneration.image_url}
+                                                isExpanded={true}
+                                                context={selectedGeneration.input_context as unknown as ContextFormData}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            ) : (
+                                // v2 View
+                                <div className="bg-slate-950 p-6 rounded-lg overflow-auto max-h-[600px] font-mono text-xs text-green-400 border border-slate-800 shadow-2xl">
+                                    <pre>{JSON.stringify(selectedGeneration.output_copy, null, 2)}</pre>
+                                </div>
+                            )}
                         </div>
                     )}
                 </DialogContent>

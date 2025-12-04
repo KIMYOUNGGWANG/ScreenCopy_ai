@@ -2,15 +2,15 @@
 "use client"
 
 import { useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Sparkles } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
 
     const handleGoogleLogin = async () => {
         try {

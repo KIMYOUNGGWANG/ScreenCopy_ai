@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 async function CreditDisplay() {
-    const cookieStore = await cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore as any })
+    const supabase = await createClient()
 
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -34,8 +33,7 @@ import { CreditActions } from "@/components/dashboard/credit-actions"
 import { Sparkles } from "lucide-react"
 
 export default async function DashboardPage() {
-    const cookieStore = await cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore as any })
+    const supabase = await createClient()
 
     const { data: { session } } = await supabase.auth.getSession()
 

@@ -1,4 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         }
 
         const cookieStore = await cookies()
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore as any })
+        const supabase = await createClient()
 
         // Check Authentication (no credit deduction for refinement)
         const { data: { session } } = await supabase.auth.getSession()

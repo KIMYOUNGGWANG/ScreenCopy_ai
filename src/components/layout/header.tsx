@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 export function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [user, setUser] = useState<User | null>(null);
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
 
     useEffect(() => {
         const handleScroll = () => {

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { UploadZone } from '@/components/upload-zone'
 import { ContextForm, ContextFormData } from '@/components/context-form'
@@ -11,16 +12,21 @@ import { ArrowLeft, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { GenerationLoading } from '@/components/generation-loading'
+import { GhostwriterOutput } from '@/types/generation'
 
-export default function GeneratePage() {
+import { Suspense } from 'react'
+
+function GenerateContent() {
     const [file, setFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [isGenerating, setIsGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [results, setResults] = useState<GeneratedCopy[] | null>(null)
+    const [results, setResults] = useState<GeneratedCopy[] | GhostwriterOutput | null>(null)
     const [contextData, setContextData] = useState<ContextFormData | null>(null)
     const [initialValues, setInitialValues] = useState<Partial<ContextFormData> | undefined>(undefined)
+    const searchParams = useSearchParams()
+
 
     const handleGenerate = async (data: ContextFormData) => {
         if (!file) {
@@ -54,8 +60,11 @@ export default function GeneratePage() {
                 throw new Error(result.error || 'Failed to generate copy')
             }
 
-            toast.success('Copy generated successfully!')
+            toast.success('Content generated successfully!')
             setResults(result.data)
+            if (result.imageUrl) {
+                setPreviewUrl(result.imageUrl)
+            }
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'An error occurred'
             setError(errorMessage)
@@ -68,32 +77,7 @@ export default function GeneratePage() {
         }
     }
 
-    const handleDemoClick = async () => {
-        try {
-            // Load a placeholder image
-            const response = await fetch('https://placehold.co/1080x1920/png?text=App+Screenshot')
-            const blob = await response.blob()
-            const demoFile = new File([blob], "demo_screenshot.png", { type: "image/png" })
 
-            setFile(demoFile)
-            setPreviewUrl(URL.createObjectURL(demoFile))
-
-            setInitialValues({
-                appName: "FitLife Pro",
-                category: "health",
-                targetAudience: "Busy professionals wanting to stay fit",
-                tone: "inspirational",
-                description: "A fitness app that creates 15-minute home workout routines for busy people.",
-                keywords: "fitness, home workout, quick, health",
-                language: "English"
-            })
-
-            toast.success('Demo data loaded! Click "Generate Copy" to try.')
-        } catch (error) {
-            console.error('Demo load error:', error)
-            toast.error('Failed to load demo data')
-        }
-    }
 
     const handleImageSelect = async (selectedFile: File) => {
         setFile(selectedFile)
@@ -138,13 +122,66 @@ export default function GeneratePage() {
     }
 
     const handleRefine = (index: number, refinedCopy: GeneratedCopy) => {
-        if (!results) return
+        if (!results || !Array.isArray(results)) return
         const newResults = [...results]
         newResults[index] = refinedCopy
         setResults(newResults)
     }
 
     if (results) {
+        // v2 View (Ghostwriter)
+        if ('weekly_batch' in results) {
+            return (
+                <div className="container mx-auto py-8 px-4 max-w-6xl">
+                    <Button
+                        variant="ghost"
+                        onClick={resetGeneration}
+                        className="mb-6 gap-2"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Generate New
+                    </Button>
+
+                    <h1 className="text-3xl font-bold mb-2 text-center">Weekly Content Schedule</h1>
+                    <p className="text-center text-muted-foreground mb-8">
+                        Day 2 Visuals Verified: Here is your Auto-Designed Image & Schedule.
+                    </p>
+
+                    <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                        {/* Left: Generated Image */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Auto-Designed Image (Monday)</h3>
+                            <div className="border rounded-lg overflow-hidden shadow-lg bg-slate-950 aspect-video relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={previewUrl || ''}
+                                    alt="Generated Bento Grid"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                * This image was auto-generated by Satori based on the "Monday" thread content.
+                            </p>
+                        </div>
+
+                        {/* Right: JSON Data */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Raw Content Data</h3>
+                            <div className="bg-slate-950 p-6 rounded-lg overflow-auto h-[400px] font-mono text-xs text-green-400 border border-slate-800 shadow-2xl">
+                                <pre>{JSON.stringify(results, null, 2)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-8 text-center">
+                        <p className="text-sm text-muted-foreground">
+                            (UI Implementation coming in Day 3)
+                        </p>
+                    </div>
+                </div>
+            )
+        }
+
+        // v1 View (App Store Copy)
         return (
             <div className="container mx-auto py-8 px-4 max-w-6xl">
                 <Button
@@ -162,7 +199,7 @@ export default function GeneratePage() {
                 </p>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {results.map((copy, index) => (
+                    {(results as GeneratedCopy[]).map((copy, index) => (
                         <ResultCard
                             key={index}
                             copy={copy}
@@ -178,8 +215,12 @@ export default function GeneratePage() {
         )
     }
 
+    // ... imports
+
     return (
         <div className="container mx-auto py-8 px-4 max-w-6xl">
+
+
             <div className="flex items-center justify-between mb-8">
                 <h1 className="text-3xl font-bold">Generate Copy</h1>
                 <Button asChild variant="ghost" className="gap-2">
@@ -197,12 +238,9 @@ export default function GeneratePage() {
                             <div>
                                 <CardTitle>Upload Screenshot</CardTitle>
                                 <CardDescription>
-                                    Upload your app screenshot to generate optimized copy.
+                                    Upload your app screenshot to generate a weekly content schedule.
                                 </CardDescription>
                             </div>
-                            <Button variant="outline" size="sm" onClick={handleDemoClick}>
-                                Try Demo Image
-                            </Button>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <UploadZone
@@ -226,21 +264,6 @@ export default function GeneratePage() {
                 <div className="space-y-6">
                     {isGenerating ? (
                         <GenerationLoading imageUrl={previewUrl} />
-                    ) : results ? (
-                        <div className="grid gap-6">
-                            {(results as GeneratedCopy[]).map((copy, index) => (
-                                <div key={index} className="w-full">
-                                    <ResultCard
-                                        copy={copy}
-                                        index={index}
-                                        imageUrl={previewUrl}
-                                        onRefine={(refined) => handleRefine(index, refined)}
-                                        isExpanded={true}
-                                        context={contextData!}
-                                    />
-                                </div>
-                            ))}
-                        </div>
                     ) : error ? (
                         <div className="h-full min-h-[400px] flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-red-200 bg-red-50 rounded-lg">
                             <div className="bg-white p-4 rounded-full mb-4 shadow-sm">
@@ -260,5 +283,13 @@ export default function GeneratePage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function GeneratePage() {
+    return (
+        <Suspense fallback={<GenerationLoading />}>
+            <GenerateContent />
+        </Suspense>
     )
 }

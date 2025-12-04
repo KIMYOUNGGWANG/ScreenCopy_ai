@@ -1,5 +1,4 @@
-
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
@@ -10,12 +9,12 @@ const anthropic = new Anthropic({
 
 export async function POST(request: Request) {
     const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore as any })
+    const supabase = await createClient()
 
     try {
         // 1. Check Authentication
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
             return NextResponse.json({
                 error: 'Please sign in to analyze images.'
             }, { status: 401 })
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
 
         // 3. Call Anthropic Claude 4.5 Sonnet
         const prompt = `
-You are an expert App Store Optimization (ASO) specialist.
+You are an expert App Store Optimization (ASO) and UI/UX specialist.
 Analyze this app screenshot and extract the following metadata to pre-fill a marketing form.
 
 Fields to extract:
@@ -47,6 +46,11 @@ Fields to extract:
 4. Tone: Infer the brand voice from the UI style [professional, casual, playful, inspirational].
 5. Description: A 1-sentence summary of what the app does.
 6. Keywords: 5-7 relevant ASO keywords (comma separated).
+7. Accent Color: Extract the dominant brand color from the UI (buttons, headers, logos). Return as Hex Code (e.g., "#FF5733").
+8. Suggested Layout: Based on the screenshot density, suggest the best layout for a marketing card:
+   - "bento": If the screen has many distinct feature blocks.
+   - "device": If the screen is a clean, single view (best for wrapping in a phone frame).
+   - "viral": If the screen is text-heavy or simple (best for typography focus).
 
 OUTPUT FORMAT (JSON ONLY):
 {
@@ -55,7 +59,9 @@ OUTPUT FORMAT (JSON ONLY):
   "targetAudience": "string",
   "tone": "string",
   "description": "string",
-  "keywords": "string"
+  "keywords": "string",
+  "accentColor": "#HexCode",
+  "suggestedLayout": "bento|device|viral"
 }
 `
 

@@ -1,8 +1,9 @@
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { GhostwriterOutput, WeeklyThread } from '@/types/generation'
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -17,7 +18,7 @@ async function sleep(ms: number) {
 
 export async function POST(request: Request) {
     const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore as any })
+    const supabase = await createClient()
     let creditDeducted = false
     let userId: string | null = null
 
@@ -40,14 +41,14 @@ export async function POST(request: Request) {
         }
 
         // 1. Check Authentication & Credits
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
             return NextResponse.json({
                 error: 'Please sign in to generate copy.'
             }, { status: 401 })
         }
 
-        userId = session.user.id
+        userId = user.id
 
         const { data: profile } = await supabase
             .from('profiles')
@@ -116,100 +117,8 @@ CONTEXT:
 - Language: ${language || 'English'}
 `
 
-            /* v2 Feature: SocialSnap (Disabled for v1 Launch)
-            if (platform === 'twitter') {
+            if (platform === 'app_store') {
                 return `
-You are a Viral Social Media Manager specializing in Twitter/X growth.
-Analyze the screenshot and write a high-engagement Twitter Thread (5 tweets).
-Style: #BuildInPublic, humble but excited, professional yet personal.
-
-${commonContext}
-
-TASK:
-Write a 5-tweet thread.
-Tweet 1: The Hook (Problem statement)
-Tweet 2: The Old Way (Pain point)
-Tweet 3: The Solution (Reference the screenshot)
-Tweet 4: The Benefit (Result)
-Tweet 5: CTA (Link placeholder)
-
-OUTPUT FORMAT (JSON ARRAY):
-[
-  {
-    "headline": "Tweet 1 (Hook)",
-    "subtext": "Tweet 2 (Pain)",
-    "style": "thread",
-    "layout": "split",
-    "color_hex": "#1DA1F2",
-    "aso_score": 90,
-    "benchmark_ref": "Twitter Thread Style",
-    "reasoning": "Tweet 3: [Solution Content] | Tweet 4: [Benefit Content] | Tweet 5: [CTA]" 
-  }
-]
-(Note: Pack the full thread content into the fields creatively. Headline=T1, Subtext=T2, Reasoning=T3-T5 for now, or we adapt the UI later. Let's stick to the schema: Headline=Hook, Subtext=Main Value Prop, Reasoning=Full Thread Content)
-`
-            } else if (platform === 'linkedin') {
-                return `
-You are a LinkedIn Top Voice and Thought Leader.
-Analyze the screenshot and write a professional, insight-driven LinkedIn post.
-Style: Storytelling, "Broetry" (spaced out lines), professional insights.
-
-${commonContext}
-
-TASK:
-Write a LinkedIn post structure:
-1. Attention Grabbing Header
-2. The "Aha" Moment (Problem/Solution)
-3. Key Takeaways (Bulleted list)
-4. Call to Discussion
-
-OUTPUT FORMAT (JSON ARRAY):
-[
-  {
-    "headline": "Attention Grabbing Header",
-    "subtext": "The core insight or 'Aha' moment",
-    "style": "professional",
-    "layout": "center",
-    "color_hex": "#0A66C2",
-    "aso_score": 85,
-    "benchmark_ref": "LinkedIn Viral Post",
-    "reasoning": "Full post body content goes here..."
-  }
-]
-`
-            } else if (platform === 'instagram') {
-                return `
-You are an Instagram Growth Expert.
-Analyze the screenshot and write a captivating caption.
-Style: Visual, Emotional, Emoji-rich.
-
-${commonContext}
-
-TASK:
-Write an Instagram caption:
-1. Hook (First line visible)
-2. Value/Story
-3. Engagement Question
-4. Hashtags (30 optimized tags)
-
-OUTPUT FORMAT (JSON ARRAY):
-[
-  {
-    "headline": "Visual Hook (Short & Punchy)",
-    "subtext": "The main caption body with emojis",
-    "style": "emotional",
-    "layout": "bottom",
-    "color_hex": "#E1306C",
-    "aso_score": 88,
-    "benchmark_ref": "Instagram Influencer Style",
-    "reasoning": "Hashtags: #..."
-  }
-]
-`
-            } else {
-            */
-            // Default: App Store
-            return `
 You are an expert Mobile App Growth Expert specializing in App Store & Google Play optimization. Perform a multi-agent analysis on this screenshot to create high-converting marketing copy.
 
 AGENTS:
@@ -237,7 +146,61 @@ OUTPUT FORMAT (JSON ARRAY):
 ]
 Return ONLY the JSON array. No other text.
 `
-            // }
+            } else {
+                // v2 Ghostwriter Logic (Twitter/LinkedIn/Instagram)
+                return `
+You are a Silicon Valley Growth Engineer (Y-Combinator style).
+Your goal is to ghostwrite a high-quality "Weekly Twitter Content Schedule" for an indie developer based on their app screenshot.
+
+${commonContext}
+
+CONSTRAINTS:
+- BAN WORDS: "Revolutionary", "Game-changer", "Unleash", "Elevate", "Excited to share", "Dive in". (No marketing fluff).
+- TONE: Humble, Vulnerable, Punchy, Data-driven. Use #BuildInPublic style.
+- FORMAT: You must generate a 3-day schedule (Monday, Wednesday, Friday).
+
+TASK:
+1. Analyze the screenshot to understand the "Feature" or "Value".
+2. Create 3 distinct threads:
+   - Monday (Origin Story): Why I built this? What was the pain point?
+   - Wednesday (Feature Deep-dive): How does it work? (Explain the screenshot).
+   - Friday (Social Proof/Vision): What is the result? Where are we going?
+
+OUTPUT SCHEMA (JSON ONLY):
+{
+  "design_config": {
+    "accent_color": "#Extracted_Hex_Code_From_Image_Or_Blue",
+    "suggested_layout": "bento"
+  },
+  "weekly_batch": [
+    {
+      "day": "Monday",
+      "theme": "Origin Story",
+      "hook": "Click-baity first line (under 50 chars)",
+      "thread": [
+        "Tweet 1: The Hook (Problem)",
+        "Tweet 2: The Struggle (Old Way)",
+        "Tweet 3: The Solution (My App)",
+        "Tweet 4: The Benefit (Result)",
+        "Tweet 5: CTA (Link)"
+      ]
+    },
+    {
+      "day": "Wednesday",
+      "theme": "Feature Deep-dive",
+      "hook": "How-to style hook",
+      "thread": ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"]
+    },
+    {
+      "day": "Friday",
+      "theme": "Social Proof",
+      "hook": "Visionary hook",
+      "thread": ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"]
+    }
+  ]
+}
+`
+            }
         }
 
         const prompt = getSystemPrompt()
@@ -249,7 +212,7 @@ Return ONLY the JSON array. No other text.
             try {
                 const message = await anthropic.messages.create({
                     model: "claude-sonnet-4-5",
-                    max_tokens: 1000,
+                    max_tokens: 4096,
                     messages: [
                         {
                             role: "user",
@@ -276,13 +239,17 @@ Return ONLY the JSON array. No other text.
                 const content = contentBlock.type === 'text' ? contentBlock.text : ''
 
                 // Clean up JSON string if needed
-                const cleanContent = content?.replace(/```json\n|\n```/g, '') || '[]'
+                const cleanContent = content?.replace(/```json\n|\n```/g, '') || '{}'
                 generatedCopy = JSON.parse(cleanContent)
 
-                if (generatedCopy && Array.isArray(generatedCopy) && generatedCopy.length > 0) {
+                // Validation: Support both v1 (Array) and v2 (Object)
+                const isValidV1 = Array.isArray(generatedCopy) && generatedCopy.length > 0
+                const isValidV2 = !Array.isArray(generatedCopy) && 'weekly_batch' in generatedCopy
+
+                if (isValidV1 || isValidV2) {
                     break // Success!
                 } else {
-                    throw new Error('AI returned empty response')
+                    throw new Error('AI returned invalid response format')
                 }
             } catch (error) {
                 lastError = error as Error
@@ -298,12 +265,54 @@ Return ONLY the JSON array. No other text.
             throw new Error(lastError?.message || 'AI generation failed after multiple attempts. Your credit has been restored.')
         }
 
-        // 6. Save to Database (Generations table)
+        // 6. Auto-Design Engine (Day 2 Feature)
+        let generatedImageUrl = publicUrl // Default to original screenshot
+
+        if (generatedCopy && !Array.isArray(generatedCopy) && 'weekly_batch' in generatedCopy) {
+            try {
+                const output = generatedCopy as GhostwriterOutput
+                const mondayThread = output.weekly_batch.find((d: WeeklyThread) => d.day === 'Monday')
+
+                if (mondayThread) {
+                    const { generateSocialImage } = await import('@/lib/design-engine')
+
+                    // Extract key points for the bento grid
+                    const bentoItems = mondayThread.thread.slice(0, 4).map((t: string) => t.replace(/^Tweet \d+: /, '').substring(0, 60) + '...')
+
+                    const imageBuffer = await generateSocialImage(
+                        mondayThread.hook, // Title
+                        "Monday: Origin Story", // Subtitle
+                        bentoItems,
+                        output.design_config.accent_color || '#3B82F6'
+                    )
+
+                    // Upload generated image
+                    const genFileName = `${userId}/gen_${Date.now()}.png`
+                    const { error: genUploadError } = await supabase.storage
+                        .from('screenshots')
+                        .upload(genFileName, imageBuffer, {
+                            contentType: 'image/png'
+                        })
+
+                    if (!genUploadError) {
+                        const { data: { publicUrl: genPublicUrl } } = supabase.storage
+                            .from('screenshots')
+                            .getPublicUrl(genFileName)
+                        generatedImageUrl = genPublicUrl
+                    }
+                }
+            } catch (designError) {
+                console.error('Auto-Design failed:', designError)
+                // Fallback to original image, don't fail the request
+            }
+        }
+
+        // 7. Save to Database (Generations table)
         const { error: dbError } = await supabase
             .from('generations')
             .insert({
                 user_id: userId,
-                image_url: publicUrl,
+                image_url: generatedImageUrl, // Use the NEW generated image if available
                 input_context: { appName, category, targetAudience, tone, description, keywords, language, platform },
                 output_copy: generatedCopy,
             })
@@ -313,7 +322,7 @@ Return ONLY the JSON array. No other text.
             throw new Error(`Failed to save history: ${dbError.message}`)
         }
 
-        // 7. Log Transaction
+        // 8. Log Transaction
         await supabase.from('transactions').insert({
             user_id: userId,
             amount: -1,
@@ -323,7 +332,7 @@ Return ONLY the JSON array. No other text.
         return NextResponse.json({
             success: true,
             data: generatedCopy,
-            imageUrl: publicUrl
+            imageUrl: generatedImageUrl
         })
 
     } catch (error: unknown) {

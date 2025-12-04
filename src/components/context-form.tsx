@@ -79,8 +79,8 @@ export function ContextForm({ onSubmit, isLoading, initialValues, isAnalyzing }:
                             </div>
                         </div>
                     )}
-                    {/* v2 Feature: Platform Selector (Disabled for v1 Launch) */}
-                    {/* <div className="space-y-2">
+
+                    <div className="space-y-2">
                         <Label htmlFor="platform">Platform</Label>
                         <Select onValueChange={(value) => form.setValue("platform", value as any)} defaultValue={defaultValues.platform}>
                             <SelectTrigger>
@@ -93,7 +93,7 @@ export function ContextForm({ onSubmit, isLoading, initialValues, isAnalyzing }:
                                 <SelectItem value="instagram">Instagram Caption</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div> */}
+                    </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="appName">App Name</Label>
