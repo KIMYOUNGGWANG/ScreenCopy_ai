@@ -525,9 +525,11 @@ Return a JSON array with 5 variations. Each must feel COMPLETELY DIFFERENT.
     "color_hex": "#FFFFFF",
     "aso_score": 85,
     "benchmark_ref": "${isKorean ? '[앱 이름] 스타일 참고' : 'Inspired by [App Name]'}",
-    "why_it_works": "${isKorean ? '타겟 유저가 반응하는 이유' : 'Why target users will respond'}"
+    "reasoning": "${isKorean ? '이 카피가 효과적인 이유를 구체적으로 설명 (키워드, 심리적 트리거, 타겟 페르소나 분석 포함)' : 'Detailed explanation of why this works: psychological triggers, keyword strategy, target persona analysis, and competitive positioning'}"
   }
 ]
+
+IMPORTANT: The "reasoning" field MUST be detailed (2-3 sentences minimum). Explain the psychology, keyword strategy, and why this resonates with the target audience.
 
 Start with '[' character. No markdown. No preamble.
 </output_format>`

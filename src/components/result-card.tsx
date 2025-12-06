@@ -254,13 +254,19 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 pl-2">
-                            <p className="italic">&quot;{copy.reasoning}&quot;</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="font-semibold text-neon-cyan">Benchmark:</span>
-                                <span>{copy.benchmark_ref}</span>
+                        {(copy.reasoning || copy.benchmark_ref) && (
+                            <div className="flex flex-col gap-2 text-xs text-muted-foreground border-l-2 pl-2">
+                                {copy.reasoning && (
+                                    <p className="italic">&quot;{copy.reasoning}&quot;</p>
+                                )}
+                                {copy.benchmark_ref && (
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="font-semibold text-neon-cyan">Benchmark:</span>
+                                        <span>{copy.benchmark_ref}</span>
+                                    </div>
+                                )}
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 
