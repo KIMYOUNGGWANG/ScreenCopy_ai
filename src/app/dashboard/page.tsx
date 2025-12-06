@@ -6,20 +6,24 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 
-async function CreditDisplay() {
+async function CreditDisplay({ simple }: { simple?: boolean }) {
     const supabase = await createClient()
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (!user) {
         return <p className="text-gray-500 mb-4">0 credits remaining.</p>
     }
 
     const { data: profile } = await supabase
         .from('profiles')
         .select('credits')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .single()
+
+    if (simple) {
+        return <span className="text-3xl font-bold text-white">{profile?.credits ?? 0}</span>
+    }
 
     return (
         <p className="text-gray-500 mb-4">
@@ -30,21 +34,23 @@ async function CreditDisplay() {
 
 import { RefillButton } from "@/components/dashboard/refill-button"
 import { CreditActions } from "@/components/dashboard/credit-actions"
-import { Sparkles } from "lucide-react"
+import { Sparkles, ArrowRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { formatDistanceToNow } from "date-fns"
 
 export default async function DashboardPage() {
     const supabase = await createClient()
 
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!session) {
+    if (!user) {
         redirect('/login')
     }
 
     const { count } = await supabase
         .from('generations')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
 
     const hasHistory = count !== null && count > 0
 

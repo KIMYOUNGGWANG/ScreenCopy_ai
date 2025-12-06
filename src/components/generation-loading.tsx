@@ -18,7 +18,6 @@ export function GenerationLoading({ imageUrl }: GenerationLoadingProps) {
     const [loadingStep, setLoadingStep] = useState(0)
 
     useEffect(() => {
-        setLoadingStep(0)
         const interval = setInterval(() => {
             setLoadingStep(prev => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev))
         }, 2500)

@@ -1,0 +1,117 @@
+
+> temp_app@0.1.0 lint
+> eslint
+
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/api/analyze-image/route.ts
+  11:11  warning  'cookieStore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/api/generate/route.ts
+  20:11  warning  'cookieStore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/api/refine/route.ts
+  20:15  warning  'cookieStore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/api/stripe/checkout/route.ts
+  9:15  warning  'cookieStore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/api/test/add-credits/route.ts
+  5:28  warning  'request' is defined but never used               @typescript-eslint/no-unused-vars
+  6:11  warning  'cookieStore' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/dashboard/page.tsx
+   4:10  warning  'cookies' is defined but never used              @typescript-eslint/no-unused-vars
+  35:10  warning  'RefillButton' is defined but never used         @typescript-eslint/no-unused-vars
+  37:20  warning  'ArrowRight' is defined but never used           @typescript-eslint/no-unused-vars
+  38:10  warning  'Badge' is defined but never used                @typescript-eslint/no-unused-vars
+  39:10  warning  'formatDistanceToNow' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/app/generate/page.tsx
+   5:20  warning  'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  32:11  warning  'searchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/context-form.tsx
+  68:8   warning  React Hook useEffect has missing dependencies: 'defaultValues' and 'form'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+  86:90  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+  87:36  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/context-form.tsx:87:36
+  85 |                         <Select
+  86 |                             onValueChange={(value) => form.setValue("platform", value as any)}
+> 87 |                             value={form.watch("platform")}
+     |                                    ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  88 |                         >
+  89 |                             <SelectTrigger>
+  90 |                                 <SelectValue placeholder="Select platform" />  react-hooks/incompatible-library
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/copy-demo.tsx
+   3:10  warning  'useState' is defined but never used                             @typescript-eslint/no-unused-vars
+  87:39  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  87:58  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/demo-simulation.tsx
+  5:10  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/generation-loading.tsx
+  21:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/generation-loading.tsx:21:9
+  19 |
+  20 |     useEffect(() => {
+> 21 |         setLoadingStep(0)
+     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  22 |         const interval = setInterval(() => {
+  23 |             setLoadingStep(prev => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev))
+  24 |         }, 2500)  react-hooks/set-state-in-effect
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/hero-demo.tsx
+  6:32  warning  'Smartphone' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/landing/copy-demo-section.tsx
+  10:11  warning  'containerRef' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/landing/hero.tsx
+  3:10  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+  3:29  warning  'useState' is defined but never used   @typescript-eslint/no-unused-vars
+  6:21  warning  'Sparkles' is defined but never used   @typescript-eslint/no-unused-vars
+  9:10  warning  'HeroDemo' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/result-card.tsx
+  15:10  warning  'Input' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  16:10  warning  'Label' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  19:5   warning  'Dialog' is defined but never used                                                              @typescript-eslint/no-unused-vars
+  20:5   warning  'DialogContent' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  21:5   warning  'DialogDescription' is defined but never used                                                   @typescript-eslint/no-unused-vars
+  22:5   warning  'DialogHeader' is defined but never used                                                        @typescript-eslint/no-unused-vars
+  23:5   warning  'DialogTitle' is defined but never used                                                         @typescript-eslint/no-unused-vars
+  24:5   warning  'DialogTrigger' is defined but never used                                                       @typescript-eslint/no-unused-vars
+  56:36  warning  'index' is defined but never used                                                               @typescript-eslint/no-unused-vars
+  69:9   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/upgrade-prompt.tsx
+  15:55  warning  'onClose' is defined but never used  @typescript-eslint/no-unused-vars
+  66:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/kim-young-gwang/Desktop/screenshot/src/components/weekly-schedule-view.tsx
+    6:41   warning  'CardTitle' is defined but never used                            @typescript-eslint/no-unused-vars
+    6:52   warning  'CardDescription' is defined but never used                      @typescript-eslint/no-unused-vars
+    9:16   warning  'Check' is defined but never used                                @typescript-eslint/no-unused-vars
+    9:66   warning  'Wand2' is defined but never used                                @typescript-eslint/no-unused-vars
+    9:106  warning  'Clock' is defined but never used                                @typescript-eslint/no-unused-vars
+   65:22   warning  'e' is defined but never used                                    @typescript-eslint/no-unused-vars
+  277:101  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/kim-young-gwang/Desktop/screenshot/src/lib/supabase/middleware.ts
+  19:58  warning  'options' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 47 problems (5 errors, 42 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

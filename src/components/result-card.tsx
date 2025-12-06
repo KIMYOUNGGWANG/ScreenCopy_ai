@@ -66,6 +66,7 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
     useEffect(() => {
         setHeadline(copy.headline)
         setSubtext(copy.subtext)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [copy.headline, copy.subtext])
 
     const handleCopy = async () => {
@@ -192,10 +193,19 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
                                                 >
                                                     {subtext}
                                                 </p>
+
+                                                {/* Color Indicator */}
+                                                <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded px-2 py-1 text-[10px] text-white/70">
+                                                    <div
+                                                        className="w-3 h-3 rounded-full border border-white/30"
+                                                        style={{ backgroundColor: copy.color_hex || '#ffffff' }}
+                                                    />
+                                                    <span>AI 추천 색상</span>
+                                                </div>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent side="top" className="bg-black/80 text-white border-none text-xs">
-                                            <p>Drag to position • Click to edit</p>
+                                            <p>드래그로 위치 조정 • 클릭해서 편집</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

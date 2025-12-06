@@ -13,6 +13,7 @@ import { HistorySkeleton } from '@/components/ui/skeleton'
 import { GeneratedCopy } from '@/components/result-card'
 
 import { GhostwriterOutput } from '@/types/generation'
+import { WeeklyScheduleView } from '@/components/weekly-schedule-view'
 
 interface Generation {
     id: string
@@ -42,13 +43,13 @@ export default function HistoryPage() {
     useEffect(() => {
         async function loadGenerations() {
             try {
-                const { data: { session } } = await supabase.auth.getSession()
-                if (!session) return
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) return
 
                 const { data, error } = await supabase
                     .from('generations')
                     .select('*')
-                    .eq('user_id', session.user.id)
+                    .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
 
                 if (error) throw error
@@ -246,8 +247,11 @@ export default function HistoryPage() {
                                 </div>
                             ) : (
                                 // v2 View
-                                <div className="bg-slate-950 p-6 rounded-lg overflow-auto max-h-[600px] font-mono text-xs text-green-400 border border-slate-800 shadow-2xl">
-                                    <pre>{JSON.stringify(selectedGeneration.output_copy, null, 2)}</pre>
+                                <div className="mt-4">
+                                    <WeeklyScheduleView
+                                        results={selectedGeneration.output_copy as GhostwriterOutput}
+                                        imageUrl={selectedGeneration.image_url}
+                                    />
                                 </div>
                             )}
                         </div>

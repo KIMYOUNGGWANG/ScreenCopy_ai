@@ -82,15 +82,16 @@ export function ContextForm({ onSubmit, isLoading, initialValues, isAnalyzing }:
 
                     <div className="space-y-2">
                         <Label htmlFor="platform">Platform</Label>
-                        <Select onValueChange={(value) => form.setValue("platform", value as any)} defaultValue={defaultValues.platform}>
+                        <Select
+                            onValueChange={(value) => form.setValue("platform", value as ContextFormData['platform'])}
+                            value={form.watch("platform")}
+                        >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select platform" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="app_store">App Store Screenshot</SelectItem>
                                 <SelectItem value="twitter">Twitter Thread</SelectItem>
-                                <SelectItem value="linkedin">LinkedIn Post</SelectItem>
-                                <SelectItem value="instagram">Instagram Caption</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -137,12 +138,7 @@ export function ContextForm({ onSubmit, isLoading, initialValues, isAnalyzing }:
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="English">English</SelectItem>
-                                    <SelectItem value="Korean">Korean</SelectItem>
-                                    <SelectItem value="Japanese">Japanese</SelectItem>
-                                    <SelectItem value="Spanish">Spanish</SelectItem>
-                                    <SelectItem value="French">French</SelectItem>
-                                    <SelectItem value="German">German</SelectItem>
-                                    <SelectItem value="Chinese">Chinese</SelectItem>
+                                    <SelectItem value="Korean">한국어 (Korean)</SelectItem>
                                 </SelectContent>
                             </Select>
                             {form.formState.errors.language && (

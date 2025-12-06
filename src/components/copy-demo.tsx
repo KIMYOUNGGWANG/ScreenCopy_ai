@@ -84,7 +84,7 @@ export function CopyDemo({ demoState = 'idle' }: { demoState?: CopyDemoState }) 
                             </div>
                             <h3 className="text-xl font-bold text-slate-300 mb-2">Ready to Generate</h3>
                             <p className="text-slate-500 max-w-md">
-                                Click "Generate Copy Demo" to see how AI creates high-converting headlines for your app.
+                                Click &quot;Generate Copy Demo&quot; to see how AI creates high-converting headlines for your app.
                             </p>
                         </motion.div>
                     )}
