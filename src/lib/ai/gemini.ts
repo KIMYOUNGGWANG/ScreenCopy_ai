@@ -4,7 +4,7 @@ import { AIProvider, GenerateCopyParams, GenerateCopyResult, RefineTextParams, I
 export class GeminiProvider implements AIProvider {
   private client: GoogleGenerativeAI
   private readonly MAX_RETRIES = 3
-  private readonly RETRY_DELAY = 2000
+  private readonly RETRY_DELAY = 3000
 
   constructor() {
     this.client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -60,7 +60,7 @@ export class GeminiProvider implements AIProvider {
   private async generateWithFallback(
     modelName: string,
     prompt: string | Array<string | any>,
-    fallbackModelName: string = "gemini-1.5-flash-latest"
+    fallbackModelName: string = "gemini-2.5-flash"
   ): Promise<string> {
     const models = [modelName, fallbackModelName]
 
@@ -186,8 +186,8 @@ Now analyze the screenshot and generate:`
       }
     ]
 
-    // Use gemini-2.0-flash for quality + stability
-    const text = await this.generateWithFallback("gemini-2.0-flash", content)
+    // Use gemini-2.5-flash for quality + stability
+    const text = await this.generateWithFallback("gemini-2.5-flash", content)
     const generatedCopy = this.extractJSON(text)
 
     return { generatedCopy }
@@ -263,7 +263,7 @@ No ads. No funding. Just building."
 Return ONLY the refined tweet. No quotes. No explanation.
 `
 
-    const resultText = await this.generateWithFallback("gemini-2.0-flash", prompt)
+    const resultText = await this.generateWithFallback("gemini-2.5-flash", prompt)
     return resultText.trim()
   }
 
@@ -329,8 +329,8 @@ IMPORTANT: Output ONLY the JSON. No markdown code blocks. No explanation.
       }
     ]
 
-    // Use gemini-2.0-flash for image analysis
-    const text = await this.generateWithFallback("gemini-2.0-flash", content)
+    // Use gemini-2.5-flash for image analysis
+    const text = await this.generateWithFallback("gemini-2.5-flash", content)
     return this.extractJSON(text)
   }
 
