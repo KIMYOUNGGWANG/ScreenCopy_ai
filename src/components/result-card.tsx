@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, Check, Wand2, GripHorizontal } from 'lucide-react'
+import { Copy, Check, Wand2, GripHorizontal, Image } from 'lucide-react'
 import {
     Tooltip,
     TooltipContent,
@@ -24,6 +24,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { RefinementDialog } from './refinement-dialog'
+import { PreviewEditor } from './preview-generator'
 import { ContextFormData } from './context-form'
 
 export interface GeneratedCopy {
@@ -57,6 +58,7 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
     const [copied, setCopied] = useState(false)
     const [viewMode, setViewMode] = useState<'preview' | 'text'>('preview')
     const [currentFontIndex, setCurrentFontIndex] = useState(0)
+    const [showPreviewEditor, setShowPreviewEditor] = useState(false)
 
     // Local state for editable text
     const [headline, setHeadline] = useState(copy.headline)
@@ -287,7 +289,31 @@ export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false
                             onRefine={(refined) => onRefine && onRefine(refined)}
                             context={context}
                         />
+
+                        {imageUrl && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                onClick={() => setShowPreviewEditor(true)}
+                            >
+                                <Image className="w-4 h-4" />
+                                Export
+                            </Button>
+                        )}
                     </div>
+
+                    {/* Preview Editor Modal */}
+                    {imageUrl && (
+                        <PreviewEditor
+                            isOpen={showPreviewEditor}
+                            onClose={() => setShowPreviewEditor(false)}
+                            screenshotUrl={imageUrl}
+                            headline={copy.headline}
+                            subtext={copy.subtext}
+                            accentColor={copy.color_hex}
+                        />
+                    )}
                 </div>
             </CardContent>
         </Card>

@@ -34,9 +34,14 @@ export async function updateSession(request: NextRequest) {
     // supabase.auth.getUser(). A simple mistake could make it very hard to debug
     // issues with users being randomly logged out.
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+    let user = null
+    try {
+        const { data } = await supabase.auth.getUser()
+        user = data.user
+    } catch (error) {
+        // Handle fetch failures gracefully (common in Edge Runtime local dev)
+        console.warn('Supabase auth fetch failed, continuing without user:', error)
+    }
 
     // If user is signed in and the current path is /login,
     // redirect the user to /dashboard

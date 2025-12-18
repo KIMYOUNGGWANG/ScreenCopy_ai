@@ -60,7 +60,7 @@ export class GeminiProvider implements AIProvider {
   private async generateWithFallback(
     modelName: string,
     prompt: string | Array<string | any>,
-    fallbackModelName: string = "gemini-3.0-flash"
+    fallbackModelName: string = "gemini-2.5-flash"
   ): Promise<string> {
     const models = [modelName, fallbackModelName]
 
@@ -186,8 +186,8 @@ Now analyze the screenshot and generate:`
       }
     ]
 
-    // Use gemini-3.0-flash for quality + stability + speed
-    const text = await this.generateWithFallback("gemini-3.0-flash", content)
+    // Use gemini-3-flash-preview (latest) for quality + speed
+    const text = await this.generateWithFallback("gemini-3-flash-preview", content)
     const generatedCopy = this.extractJSON(text)
 
     return { generatedCopy }
@@ -263,7 +263,7 @@ No ads. No funding. Just building."
 Return ONLY the refined tweet. No quotes. No explanation.
 `
 
-    const resultText = await this.generateWithFallback("gemini-3.0-flash", prompt)
+    const resultText = await this.generateWithFallback("gemini-3-flash-preview", prompt)
     return resultText.trim()
   }
 
@@ -329,8 +329,8 @@ IMPORTANT: Output ONLY the JSON. No markdown code blocks. No explanation.
       }
     ]
 
-    // Use gemini-3.0-flash for faster image analysis
-    const text = await this.generateWithFallback("gemini-3.0-flash", content)
+    // Use gemini-3-flash-preview for fastest image analysis
+    const text = await this.generateWithFallback("gemini-3-flash-preview", content)
     return this.extractJSON(text)
   }
 
