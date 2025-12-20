@@ -1,15 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { GhostwriterOutput, WeeklyThread } from '@/types/generation'
 import { getAIClient } from '@/lib/ai/client'
 
-async function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 export async function POST(request: Request) {
-    const cookieStore = await cookies()
     const supabase = await createClient()
     let creditDeducted = false
     let userId: string | null = null
@@ -90,9 +85,7 @@ export async function POST(request: Request) {
         if (!imageResponse.ok) {
             throw new Error('Failed to retrieve uploaded image.')
         }
-        const imageBuffer = await imageResponse.arrayBuffer()
-        const imageBase64 = Buffer.from(imageBuffer).toString('base64')
-        const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp"
+        // Note: imageBuffer was removed as it's not used; image is passed via file to AI provider
 
         const platform = formData.get('platform') as string || 'app_store'
 

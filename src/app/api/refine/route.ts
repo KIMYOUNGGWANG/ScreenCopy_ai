@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -17,7 +16,6 @@ export async function POST(request: Request) {
             }, { status: 400 })
         }
 
-        const cookieStore = await cookies()
         const supabase = await createClient()
 
         // Check Authentication (no credit deduction for refinement)

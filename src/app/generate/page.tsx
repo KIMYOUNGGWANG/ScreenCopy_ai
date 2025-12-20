@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { UploadZone } from '@/components/upload-zone'
 import { ContextForm, ContextFormData } from '@/components/context-form'
 import { ResultCard, GeneratedCopy } from '@/components/result-card'
@@ -29,7 +28,6 @@ function GenerateContent() {
     const [contextData, setContextData] = useState<ContextFormData | null>(null)
     const [initialValues, setInitialValues] = useState<Partial<ContextFormData> | undefined>(undefined)
     const [generationTime, setGenerationTime] = useState<number | null>(null)
-    const searchParams = useSearchParams()
 
 
     const handleGenerate = async (data: ContextFormData) => {

@@ -3,18 +3,25 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BentoGridTemplate } from '@/components/templates/bento-grid'
-import { ArrowRight, Sparkles, Smartphone } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 
 export type DemoState = 'idle' | 'loading' | 'complete'
 
 export function HeroDemo({ showTitle = true, demoState }: { showTitle?: boolean, demoState?: DemoState }) {
     // Internal state for auto-looping if no external control
     const [internalState, setInternalState] = useState<DemoState>('idle')
+    const [mounted, setMounted] = useState(false)
+
+    // Ensure component only renders dynamic content after hydration
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Auto-loop logic
     useEffect(() => {
         // Don't auto-loop if controlled externally (i.e., demoState prop is explicitly provided)
         if (demoState !== undefined) return
+        if (!mounted) return
 
         let timeoutId: NodeJS.Timeout | undefined
 
@@ -33,10 +40,19 @@ export function HeroDemo({ showTitle = true, demoState }: { showTitle?: boolean,
         return () => {
             if (timeoutId) clearTimeout(timeoutId)
         }
-    }, [internalState, demoState])
+    }, [internalState, demoState, mounted])
 
     // Use external state if provided, otherwise internal loop
     const currentState = demoState !== undefined ? demoState : internalState
+
+    // Render skeleton during SSR to prevent hydration mismatch
+    if (!mounted) {
+        return (
+            <div className="w-full max-w-4xl mx-auto mb-12">
+                <div className="relative aspect-video w-full bg-slate-950/50 border border-slate-800 rounded-xl overflow-hidden animate-pulse" />
+            </div>
+        )
+    }
 
     return (
         <div className="w-full max-w-4xl mx-auto mb-12">

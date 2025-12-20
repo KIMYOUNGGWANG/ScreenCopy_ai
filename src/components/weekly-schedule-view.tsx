@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { GhostwriterOutput, WeeklyThread } from '@/types/generation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Copy, Check, Download, Share2, Save, Loader2, Sparkles, Wand2, ThumbsUp, ThumbsDown, RefreshCw, Clock, Zap } from 'lucide-react'
+import { Copy, Share2, Save, Loader2, Sparkles, ThumbsUp, ThumbsDown, RefreshCw, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -24,7 +24,7 @@ interface WeeklyScheduleViewProps {
     onRegenerate?: () => void
 }
 
-export function WeeklyScheduleView({ results, imageUrl, generationId, generationTime, onRegenerate }: WeeklyScheduleViewProps) {
+export function WeeklyScheduleView({ results, generationId, generationTime, onRegenerate }: WeeklyScheduleViewProps) {
     const [activeTab, setActiveTab] = useState('Monday')
     const [editableResults, setEditableResults] = useState<GhostwriterOutput>(results)
     const [isSaving, setIsSaving] = useState(false)
@@ -62,7 +62,7 @@ export function WeeklyScheduleView({ results, imageUrl, generationId, generation
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ feedback: type })
                 })
-            } catch (e) {
+            } catch {
                 // Silent fail for feedback
             }
         }

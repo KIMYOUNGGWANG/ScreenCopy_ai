@@ -1,13 +1,25 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { CopyDemo, CopyDemoState } from '@/components/copy-demo'
+import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Loader2 } from 'lucide-react'
+
+// Dynamic import for heavy animation component
+const CopyDemo = dynamic(() => import('@/components/copy-demo').then(mod => ({ default: mod.CopyDemo })), {
+    loading: () => (
+        <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-neon-cyan" />
+        </div>
+    ),
+    ssr: false,
+})
+
+export type { CopyDemoState } from '@/components/copy-demo'
+import type { CopyDemoState } from '@/components/copy-demo'
 
 export function CopyDemoSection() {
     const [demoState, setDemoState] = useState<CopyDemoState>('idle')
-    const containerRef = useRef<HTMLDivElement>(null)
 
     const handleDemo = () => {
         if (demoState === 'complete') {

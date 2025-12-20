@@ -2,7 +2,6 @@
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Slider } from '@/components/ui/slider'
 import {
     Select,
     SelectContent,
@@ -127,8 +126,8 @@ export function StyleControls({ config, onUpdate }: StyleControlsProps) {
                                 key={color}
                                 onClick={() => onUpdate({ deviceColor: color })}
                                 className={`flex-1 h-8 rounded border text-xs font-medium capitalize transition-all ${config.deviceColor === color
-                                        ? 'border-primary bg-primary/10 text-primary'
-                                        : 'border-border hover:border-primary/50'
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-border hover:border-primary/50'
                                     }`}
                             >
                                 {color === 'black' ? '블랙' : color === 'white' ? '화이트' : '내추럴'}

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -32,11 +31,8 @@ async function CreditDisplay({ simple }: { simple?: boolean }) {
     )
 }
 
-import { RefillButton } from "@/components/dashboard/refill-button"
 import { CreditActions } from "@/components/dashboard/credit-actions"
-import { Sparkles, ArrowRight } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
+import { Sparkles } from "lucide-react"
 
 export default async function DashboardPage() {
     const supabase = await createClient()

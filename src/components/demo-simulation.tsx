@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, Copy, Sparkles, Zap } from "lucide-react"
+import { Copy, Sparkles, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function DemoSimulation() {

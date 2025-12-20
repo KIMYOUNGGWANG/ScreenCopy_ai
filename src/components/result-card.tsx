@@ -7,22 +7,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
 import { RefinementDialog } from './refinement-dialog'
 import { PreviewEditor } from './preview-generator'
 import { ContextFormData } from './context-form'
@@ -54,22 +44,24 @@ const FONT_STYLES = [
     { name: 'Playful', class: 'font-mono' },
 ]
 
-export function ResultCard({ copy, index, imageUrl, onRefine, isExpanded = false, context }: ResultCardProps) {
+export function ResultCard({ copy, imageUrl, onRefine, isExpanded = false, context }: ResultCardProps) {
     const [copied, setCopied] = useState(false)
     const [viewMode, setViewMode] = useState<'preview' | 'text'>('preview')
     const [currentFontIndex, setCurrentFontIndex] = useState(0)
     const [showPreviewEditor, setShowPreviewEditor] = useState(false)
 
-    // Local state for editable text
+    // Local state for editable text - initialized from props
+    // Using key prop on parent or conditional rendering would reset state when copy changes
     const [headline, setHeadline] = useState(copy.headline)
     const [subtext, setSubtext] = useState(copy.subtext)
 
-    // Update local state when prop changes
-    useEffect(() => {
+    // Track previous copy values to detect external changes
+    const [prevCopy, setPrevCopy] = useState(copy)
+    if (copy.headline !== prevCopy.headline || copy.subtext !== prevCopy.subtext) {
         setHeadline(copy.headline)
         setSubtext(copy.subtext)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [copy.headline, copy.subtext])
+        setPrevCopy(copy)
+    }
 
     const handleCopy = async () => {
         try {

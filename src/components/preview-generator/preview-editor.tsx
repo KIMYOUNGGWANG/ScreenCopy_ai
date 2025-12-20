@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { X, Download, Smartphone, Layout, Palette, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,9 +17,7 @@ import {
     DEFAULT_PREVIEW_CONFIG,
     getDeviceById,
     getTemplateById,
-    type PreviewConfig,
-    type DeviceFrame,
-    type LayoutTemplate
+    type PreviewConfig
 } from '@/lib/devices'
 import { DeviceSelector } from './device-selector'
 import { TemplateSelector } from './template-selector'

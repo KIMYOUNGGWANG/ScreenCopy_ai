@@ -12,7 +12,7 @@ interface UpgradePromptProps {
     onClose?: () => void
 }
 
-export function UpgradePrompt({ remainingCredits = 0, onClose }: UpgradePromptProps) {
+export function UpgradePrompt({ remainingCredits = 0 }: UpgradePromptProps) {
     const [isLoading, setIsLoading] = useState<string | null>(null)
 
     const plans = [
@@ -63,7 +63,7 @@ export function UpgradePrompt({ remainingCredits = 0, onClose }: UpgradePromptPr
             } else {
                 throw new Error(data.error || 'Failed to create checkout')
             }
-        } catch (error) {
+        } catch {
             toast.error('Failed to start checkout. Please try again.')
         } finally {
             setIsLoading(null)
@@ -117,8 +117,8 @@ export function UpgradePrompt({ remainingCredits = 0, onClose }: UpgradePromptPr
                     <Card
                         key={plan.id}
                         className={`relative overflow-hidden transition-all hover:scale-105 ${plan.popular
-                                ? 'border-purple-500 bg-gradient-to-b from-purple-500/10 to-transparent'
-                                : 'border-slate-800 bg-slate-900'
+                            ? 'border-purple-500 bg-gradient-to-b from-purple-500/10 to-transparent'
+                            : 'border-slate-800 bg-slate-900'
                             }`}
                     >
                         {plan.popular && (

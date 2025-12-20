@@ -186,8 +186,8 @@ Now analyze the screenshot and generate:`
       }
     ]
 
-    // Use gemini-3-flash-preview (latest) for quality + speed
-    const text = await this.generateWithFallback("gemini-3-flash-preview", content)
+    // Use gemini-3-flash (latest, released 2025.12.17) for quality + speed
+    const text = await this.generateWithFallback("gemini-3-flash", content)
     const generatedCopy = this.extractJSON(text)
 
     return { generatedCopy }
@@ -263,7 +263,7 @@ No ads. No funding. Just building."
 Return ONLY the refined tweet. No quotes. No explanation.
 `
 
-    const resultText = await this.generateWithFallback("gemini-3-flash-preview", prompt)
+    const resultText = await this.generateWithFallback("gemini-3-flash", prompt)
     return resultText.trim()
   }
 
@@ -329,8 +329,8 @@ IMPORTANT: Output ONLY the JSON. No markdown code blocks. No explanation.
       }
     ]
 
-    // Use gemini-3-flash-preview for fastest image analysis
-    const text = await this.generateWithFallback("gemini-3-flash-preview", content)
+    // Use gemini-3-flash for fastest image analysis
+    const text = await this.generateWithFallback("gemini-3-flash", content)
     return this.extractJSON(text)
   }
 
