@@ -16,8 +16,8 @@ const features = [
     },
     {
         icon: Smartphone,
-        title: 'App Store & Google Play Specialized',
-        description: 'Optimized for 6-10 word headlines that drive conversions. We know what works in both stores.',
+        title: 'iOS & Android Optimized',
+        description: 'Optimized for 6-10 word headlines that drive conversions. Works perfectly for both App Store and Google Play.',
         color: 'text-neon-purple',
     },
     {

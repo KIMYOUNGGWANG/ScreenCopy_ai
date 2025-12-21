@@ -47,7 +47,7 @@ export function CTA() {
                     Ready to Boost Your <span className="text-neon-cyan">Downloads</span>?
                 </h2>
                 <p className="mb-12 text-xl text-gray-600 dark:text-gray-400 md:text-2xl">
-                    Join thousands of developers who are optimizing their App Store presence today.
+                    Join thousands of developers who are optimizing their mobile app presence today.
                 </p>
 
                 <Link
